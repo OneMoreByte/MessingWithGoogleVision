@@ -8,7 +8,7 @@ from google.cloud import vision
 from google.cloud.vision import types
 from PIL import Image, ImageDraw
 
-def create_box(image, filename, objectname, verts):
+def create_box(image, filename, objectname, verts, count):
     basename = filename.split('/')[-1].split('.')[0]
     filetype = filename.split('.')[-1]
     try:
@@ -19,7 +19,7 @@ def create_box(image, filename, objectname, verts):
         pass
     draw = ImageDraw.Draw(image)
     draw.line(verts, fill="red", width=3)
-    image.save("./out/" + basename + "/" + objectname + "." + filetype)
+    image.save("./out/" + basename + "/" + objectname + "-{}.".format(count) + filetype)
 
 
 
@@ -38,6 +38,7 @@ def find_objects_with_ml(f):
     image = Image.open(file_name)
     x_size = image.width
     y_size = image.height
+    count=1
     for object_ in objects:
         print('Found "{}": (confidence: {})'.format(object_.name, object_.score))
         verts=[]
@@ -47,11 +48,12 @@ def find_objects_with_ml(f):
                 f_vert=(vertex.x * x_size, vertex.y * y_size)
             verts.append((vertex.x * x_size, vertex.y * y_size))
         verts.append(f_vert)
-        create_box(image.copy(), f, object_.name, verts)
+        create_box(image.copy(), f, object_.name, verts, count)
+        count = 1 + count
 
 
 def main():
-    images = glob.glob("meme-src/*.jpg") + glob.glob("meme-src/*.png")
+    images = glob.glob("src/*.jpg") + glob.glob("src/*.png")
     for f in images:
         find_objects_with_ml(f)
 
